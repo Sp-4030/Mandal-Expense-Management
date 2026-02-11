@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,9 +36,13 @@ public class AuthController {
 
     @GetMapping("register/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAll()
+                .stream()
+                .skip(1)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(users);
     }
+
 
 
 

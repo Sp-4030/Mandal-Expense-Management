@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MdOutlineCreateNewFolder } from "react-icons/md";
-import { FaBars, FaFilePdf, FaChevronCircleLeft, FaHome, FaPlus } from "react-icons/fa";
+import { FaBars, FaFilePdf, FaChevronCircleLeft, FaHome, FaPlus, FaUser, FaUsers } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { Lock } from "lucide-react";
 
@@ -23,8 +23,8 @@ const Sidebar = () => {
   const activeClass = "bg-blue-900 text-yellow-300 font-semibold";
 
   return (
-    <div
-      className={`relative h-screen bg-red-500 text-white p-4 shadow-md transition-all duration-300 ${
+    <aside
+      className={`flex flex-col h-screen bg-red-500 text-white p-4 shadow-md transition-all duration-300 ${
         isOpen ? "w-64" : "w-16"
       }`}
     >
@@ -44,7 +44,7 @@ const Sidebar = () => {
       </div>
 
       {/* Nav Links */}
-      <ul className="space-y-4">
+      <ul className="flex-1 space-y-4 overflow-y-auto">
         <li>
           <NavLink
             to="/gallary"
@@ -54,6 +54,18 @@ const Sidebar = () => {
           >
             <FaHome />
             {isOpen && <span>Home</span>}
+          </NavLink>
+        </li>
+
+             <li>
+          <NavLink
+            to="/register"
+            className={({ isActive }) =>
+              `${linkClass} ${isActive ? activeClass : ""}`
+            }
+          >
+            <FaUsers />
+            {isOpen && <span>Admins</span>}
           </NavLink>
         </li>
 
@@ -95,7 +107,7 @@ const Sidebar = () => {
       </ul>
 
       {/* Bottom User Section */}
-      <div className="absolute bottom-4 left-0 w-full px-4">
+      <div className="mt-auto">
         {loggedUser && (
           <div className="flex items-center gap-2 bg-red-600 p-2 rounded shadow">
             <Lock size={18} />
@@ -107,7 +119,7 @@ const Sidebar = () => {
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 };
 

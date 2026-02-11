@@ -15,7 +15,41 @@ function Gallery() {
   const [dragging, setDragging] = useState(false);
   const [start, setStart] = useState({ x: 0, y: 0 });
 
-  const closeModal = () => {
+  // Sort images by filename (year in parentheses)
+  const sortedImages = Object.entries(images).sort(([pathA], [pathB]) => {
+    const getFileName = (path) => path.split("/").pop().replace(/\.(png|jpe?g|svg)$/i, "");
+    const nameA = getFileName(pathA);
+    const nameB = getFileName(pathB);
+    
+    // Extract year from filename like "name (2025)"
+    const yearRegex = /\((\d{4})\)/;
+    const yearA = parseInt(nameA.match(yearRegex)?.[1] || "0");
+    const yearB = parseInt(nameB.match(yearRegex)?.[1] || "0");
+    
+    // Sort by year descending (newest first), then by name
+    if (yearA !== yearB) {
+      return yearB - yearA;
+    }
+    return nameA.localeCompare(nameB);
+  });
+
+  // Helper to split title into name and year
+  const splitTitle = (title) => {
+    const match = title.match(/^(.*?)(?:\s*\((\d{4})\))?$/);
+    return {
+      name: match ? match[1].trim() : title,
+      year: match && match[2] ? match[2] : null,
+    };
+  };
+
+  // Determine the maximum year present (used to highlight latest year)
+  const maxYear = sortedImages.reduce((max, [path]) => {
+    const file = path.split("/").pop().replace(/\.(png|jpe?g|svg)$/i, "");
+    const y = parseInt(splitTitle(file).year || "0");
+    return Math.max(max, isNaN(y) ? 0 : y);
+  }, 0);
+
+  const closemandal = () => {
     setSelectedImage(null);
     setSelectedTitle("");
     setScale(1);
@@ -34,11 +68,9 @@ function Gallery() {
 
       {/* Gallery Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {Object.entries(images).map(([path, img], index) => {
-          const title = path
-            .split("/")
-            .pop()
-            .replace(/\.(png|jpe?g|svg)$/i, "");
+        {sortedImages.map(([path, img], index) => {
+          const title = path.split("/").pop().replace(/\.(png|jpe?g|svg)$/i, "");
+          const { name, year } = splitTitle(title);
 
           return (
             <div
@@ -60,7 +92,13 @@ function Gallery() {
                 />
 
                 <div className="p-4 text-center font-semibold text-black text-2xl group-hover:text-orange-600">
-                  {title}
+                  <span className="block">{name}</span>
+                  {year && (
+                    <span
+                      className={`block text-lg ${parseInt(year) === maxYear ? 'font-bold text-black' : 'font-bold text-black'}`}>
+                      ({year})
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -68,20 +106,20 @@ function Gallery() {
         })}
       </div>
 
-      {/* Modal */}
+      {/* mandal */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={closeModal}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm "
+          onClick={closemandal}
         >
           <div
-            className="relative max-w-5xl w-full px-4"
+            className="relative max-w-5xl w-full px-4 "
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
-              className="absolute -top-10 right-2 text-white text-4xl font-bold hover:text-red-400"
-              onClick={closeModal}
+              className="absolute -top-10 right-2 text-white text-4xl font-bold hover:text-red-400 cursor-pointer"
+              onClick={closemandal}
             >
               &times;
             </button>
@@ -126,9 +164,21 @@ function Gallery() {
               />
             </div>
 
-            <p className="mt-6 text-center text-white text-2xl font-semibold">
-              {selectedTitle}
-            </p>
+            <div className="mt-6 text-center text-white">
+              {(() => {
+                const { name, year } = splitTitle(selectedTitle);
+                return (
+                  <>
+                    <p className="text-2xl font-semibold">{name}</p>
+                    {year && (
+                      <p className={`text-lg ${parseInt(year) === maxYear ? 'font-bold' : 'font-bold'}`}>
+                        ({year})
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
 
           </div>
         </div>
