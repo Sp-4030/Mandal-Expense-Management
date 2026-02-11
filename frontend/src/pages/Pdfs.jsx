@@ -51,7 +51,7 @@ const Pdfs = () => {
             <h2 className="font-bold mb-4 text-2xl">{pdf.title}</h2>
             <NavLink
               to={pdf.navigators}
-              className="bg-blue-700 hover:bg-red-600 text-white py-2 px-4 rounded-full font-bold"
+              className="bg-blue-700 hover:bg-orange-600 text-white py-2 px-4 rounded-full font-bold"
             >
               View
             </NavLink>

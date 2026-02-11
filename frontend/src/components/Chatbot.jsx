@@ -9,6 +9,7 @@ function Chatbot() {
   const [chatHistory, setChatHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
@@ -64,7 +65,46 @@ function Chatbot() {
             🤖 हिंदवी AI 🤖
           </div>
 
+          {/* Instructions toggle + panel */}
+          <div className="px-3 pt-2">
+            <button
+              onClick={() => setShowInstructions((s) => !s)}
+              className="text-sm px-3 py-1 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              {showInstructions ? "Hide Instructions" : "Show Instructions"}
+            </button>
+          </div>
+
+          {showInstructions && (
+            <div className="p-3 bg-yellow-50 text-sm text-gray-800 font-bold border-t border-gray-200 space-y-1 overflow-y-auto" style={{maxHeight: "45vh"}}>
+              <div className="text-center  text-red-600"><u>Your question must include at least one text</u></div>
+              <div>donation - देणगी,देणगीदार</div>
+              <div>donations - देणग्या</div>
+              <div>contribution - योगदान</div>
+              <div>contributions - योगदान</div>
+              <div>committee - समिती</div>
+              <div>committee contribution - समिती योगदान</div>
+              <div>expense - खर्च</div>
+              <div>expenses - खर्च</div>
+              <div>total expense - एकूण खर्च</div>
+              <div>spent amount - झालेला खर्च</div>
+              <div>previous year - मागील वर्ष</div>
+              <div>last year - मागील वर्ष</div>
+              <div>market - बाजार</div>
+              <div>market expense - बाजार खर्च</div>
+              <div>material - साहित्य</div>
+              <div>materials - साहित्य</div>
+              <div>income - उत्पन्न</div>
+              <div>total income - एकूण उत्पन्न</div>
+              <div>amount - रक्कम</div>
+              <div>total amount - एकूण रक्कम</div>
+              <div>balance - शिल्लक</div>
+              <div>remaining balance - उर्वरित शिल्लक</div>
+            </div>
+          )}
+
           {/* Chat messages (scrollable area) */}
+          {!showInstructions && (
           <div
             ref={chatBoxRef}
             className="flex-1 p-3 overflow-y-auto bg-gray-50 space-y-2"
@@ -76,7 +116,7 @@ function Chatbot() {
                     You: {chat.user}
                   </p>
                   <pre className="whitespace-pre-wrap text-gray-800">
-                    हिंदवी Ai: {chat.bot}
+                    हिंदवी Ai:  {chat.bot}
                   </pre>
                 </div>
               ))
@@ -87,6 +127,7 @@ function Chatbot() {
             )}
             {loading && <p className="text-gray-500 text-center">Thinking...</p>}
           </div>
+          )}
 
           {/* Input area */}
           <div className="p-3 border-t border-gray-200">
