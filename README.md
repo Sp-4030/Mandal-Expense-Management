@@ -78,7 +78,8 @@ It ensures transparency, structured financial tracking, and easy reporting withi
 
 ## 🔄 Fresh Data Creation (Truncate Tables)
 
-![Truncate Tables](https://github.com/user-attachments/assets/c6a187c9-e4e1-49bf-9788-190646a1a15b)
+<img width="960" height="540" alt="truncate" src="https://github.com/user-attachments/assets/31ea7362-57e4-4134-8d1b-b888d1ad643f" />
+
 
 ---
 
@@ -101,4 +102,5 @@ It ensures transparency, structured financial tracking, and easy reporting withi
 ![AI Chatbot](https://github.com/user-attachments/assets/69a8ff8a-44e5-412e-9fb7-c2cb0c9219da)
 
 ---
+
 
