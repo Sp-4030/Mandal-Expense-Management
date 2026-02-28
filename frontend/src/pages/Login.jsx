@@ -163,14 +163,14 @@ export default function Login() {
               {/* Login Button */}
               <button
                 onClick={handleLogin}
-                className="w-full text-base text-white py-2.5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-bold mt-6"
+                className="w-full text-base text-white py-2.5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-bold mt-6 cursor-pointer"
                 style={{
                   background:
                     "linear-gradient(135deg, #ff9933 0%, #ff6b35 100%)",
                   fontFamily: "Georgia, serif",
                 }}
               >
-                LogIn
+                LogIn/लॉगिन करा
               </button>
             </div>
           </div>

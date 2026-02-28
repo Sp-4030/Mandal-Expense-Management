@@ -32,38 +32,45 @@ export default function UserManagement() {
 
   // ✅ Validation Function
   const validateForm = () => {
-    const trimmedUsername = username.trim();
-    const trimmedPassword = password.trim();
-    const trimmedConfirmPassword = confirmPassword.trim();
+  const trimmedUsername = username.trim();
+  const trimmedPassword = password.trim();
+  const trimmedConfirmPassword = confirmPassword.trim();
 
-    if (!trimmedUsername || !trimmedPassword || !trimmedConfirmPassword) {
-      toast.error("Fill all fields (सर्व माहिती भरा)");
-      return false;
-    }
+  if (!trimmedUsername || !trimmedPassword || !trimmedConfirmPassword) {
+    toast.error("Fill all fields (सर्व माहिती भरा)");
+    return false;
+  }
 
-    if (trimmedUsername.length < 3) {
-      toast.error("Username must be at least 3 characters");
-      return false;
-    }
+  if (trimmedUsername.length < 3) {
+    toast.error("Username must be at least 3 characters");
+    return false;
+  }
 
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!usernameRegex.test(trimmedUsername)) {
-      toast.error("Username only allows letters, numbers & underscore");
-      return false;
-    }
+  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+  if (!usernameRegex.test(trimmedUsername)) {
+    toast.error("Username only allows letters, numbers & underscore");
+    return false;
+  }
 
-    if (trimmedPassword.length < 4) {
-      toast.error("Password must be at least 4 characters");
-      return false;
-    }
+  // ✅ NEW: Prevent only numbers
+  const onlyNumbers = /^[0-9]+$/;
+  if (onlyNumbers.test(trimmedUsername)) {
+    toast.error("Username cannot be only numbers (फक्त अंक चालणार नाहीत)");
+    return false;
+  }
 
-    if (trimmedPassword !== trimmedConfirmPassword) {
-      toast.error("Passwords do not match (पासवर्ड जुळत नाही)");
-      return false;
-    }
+  if (trimmedPassword.length < 4) {
+    toast.error("Password must be at least 4 characters");
+    return false;
+  }
 
-    return true;
-  };
+  if (trimmedPassword !== trimmedConfirmPassword) {
+    toast.error("Passwords do not match (पासवर्ड जुळत नाही)");
+    return false;
+  }
+
+  return true;
+};
 
   // ✅ CREATE USER
   const handleCreate = async () => {
@@ -118,7 +125,7 @@ export default function UserManagement() {
     <div className="min-h-screen bg-sky-50 flex items-center justify-center p-6">
       <Toaster position="top-center" />
 
-      <div className="w-full max-w-4xl backdrop-blur-lg bg-white/80 border border-white/40 p-8 rounded-2xl shadow-2xl transition-all duration-500">
+      <div className=" w-full max-w-4xl backdrop-blur-lg bg-white/80 border border-white/40 p-8 rounded-2xl shadow-2xl transition-all duration-500">
 
         <h2 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
           User Management (कार्यकर्ते व्यवस्थापन)

@@ -3,8 +3,9 @@ import axios from "axios";
 import auth from "../../utils/auth";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { FaCartArrowDown } from "react-icons/fa";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 import { Added, Update, Delete } from "./Form1";
+
 function Form2() {
   const [data, setData] = useState([]);
   const [form, setForm] = useState({ material: "", buyer: "", expense: "" });
@@ -13,9 +14,8 @@ function Form2() {
   const [page, setPage] = useState(1);
 
   const itemsPerPage = 5;
-  const API_URL = "http://localhost:8080/api/market"; // change path if needed
+  const API_URL = "http://localhost:8080/api/market";
 
-  // Fetch Data
   const fetchData = () => {
     auth.loadToken();
     axios
@@ -28,87 +28,86 @@ function Form2() {
     fetchData();
   }, []);
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "material" || name === "buyer") {
-      // allow only Devanagari + Latin letters and spaces
-      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s]/g, "").trimStart();
+      const sanitized = value
+        .replace(/[^A-Za-z\u0900-\u097F\s]/g, "")
+        .trimStart();
       setForm({ ...form, [name]: sanitized });
     } else {
       setForm({ ...form, [name]: value });
     }
   };
 
-  // Add / Update record
   const handleSubmit = () => {
-    // Only letters and spaces allowed for material and buyer
     const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
-    if (!form.material || !form.buyer) {
-      toast.error('कृपया सर्व आवश्यक फिल्ड भरा (Please fill required fields)');
+    const trimmedMaterial = form.material.trim();
+    const trimmedBuyer = form.buyer.trim();
+
+    if (!trimmedMaterial || !trimmedBuyer) {
+      toast.error("कृपया सर्व आवश्यक फिल्ड भरा");
       return;
     }
-    if (!nameRegex.test(form.material) || !nameRegex.test(form.buyer)) {
-      toast.error('नाव किंवा साहित्य फक्त अक्षरे असावी');
+
+    if (!nameRegex.test(trimmedMaterial) || !nameRegex.test(trimmedBuyer)) {
+      toast.error("नाव किंवा साहित्य फक्त अक्षरे असावी");
+      return;
+    }
+
+    const isDuplicate = data.some(
+      (item) =>
+        item.material.trim().toLowerCase() ===
+          trimmedMaterial.toLowerCase() &&
+        item.buyer.trim().toLowerCase() === trimmedBuyer.toLowerCase() &&
+        item.id !== editId
+    );
+
+    if (isDuplicate) {
+      toast.error("हे साहित्य आणि खरेदीदार आधीच नोंदलेले आहे");
       return;
     }
 
     const payload = {
-      material: form.material,
-      buyer: form.buyer,
+      material: trimmedMaterial,
+      buyer: trimmedBuyer,
       expense: parseFloat(form.expense) || 0,
     };
 
+    auth.loadToken();
+
     if (editId) {
-      auth.loadToken();
-      axios
-        .put(`${API_URL}/update/${editId}`, payload)
-        .then(() => {fetchData()
-          Update();
-        })
-        .catch(console.error);
-        
+      axios.put(`${API_URL}/update/${editId}`, payload).then(() => {
+        fetchData();
+        Update();
+      });
     } else {
-      auth.loadToken();
-      axios
-        .post(`${API_URL}/add`, payload)
-        .then(() => {fetchData()
-           Added();
-        })
-        .catch(console.error);
-       
+      axios.post(`${API_URL}/add`, payload).then(() => {
+        fetchData();
+        Added();
+      });
     }
 
     setForm({ material: "", buyer: "", expense: "" });
     setEditId(null);
   };
 
-  // Edit record
   const handleEdit = (id) => {
     const record = data.find((item) => item.id === id);
     if (record) {
-      setForm({
-        material: record.material,
-        buyer: record.buyer,
-        expense: record.expense,
-      });
+      setForm(record);
       setEditId(id);
     }
   };
 
-  // Delete record
   const handleDelete = (id) => {
     auth.loadToken();
-    axios
-      .delete(`${API_URL}/delete/${id}`)
-      .then(() => {setData(data.filter((item) => item.id !== id))
-        Delete();
-      })
-      .catch(console.error);
-      
+    axios.delete(`${API_URL}/delete/${id}`).then(() => {
+      setData(data.filter((item) => item.id !== id));
+      Delete();
+    });
   };
 
-  // Filter & Pagination
   const filteredData = useMemo(
     () =>
       data.filter(
@@ -124,40 +123,43 @@ function Form2() {
     page * itemsPerPage
   );
 
-  // Total expense
   const totalExpense = data.reduce((acc, cur) => acc + cur.expense, 0);
 
   return (
-    <div className="p-6">
-      {/* Header + Search */}
-      <div className="flex items-center mb-6">
-        <FaCartArrowDown className="size-8 mr-2 text-green-600" />
-        <h2 className="text-2xl font-bold">महाप्रसाद बाजार</h2>
-        <FaCartArrowDown className="size-8 ml-2 text-green-600" />
+    <div className="p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+        <div className="flex items-center">
+          <FaCartArrowDown className="size-7 mr-2 text-green-600" />
+          <h2 className="text-xl sm:text-2xl font-bold">
+            महाप्रसाद बाजार
+          </h2>
+        </div>
+
         <input
           type="text"
           placeholder="शोधा..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="sm:ml-auto w-full sm:w-48 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
         />
       </div>
 
-      {/* Input Form */}
-      <div className="flex gap-3 mb-6">
+      {/* Form */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           name="material"
           placeholder="साहित्य"
           value={form.material}
           onChange={handleChange}
-          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="flex-1 px-3 py-2 border rounded-lg"
         />
         <input
           name="buyer"
           placeholder="वस्तू खरेदीदारचे नावे"
           value={form.buyer}
           onChange={handleChange}
-          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="flex-1 px-3 py-2 border rounded-lg"
         />
         <input
           name="expense"
@@ -165,85 +167,69 @@ function Form2() {
           placeholder="खर्च"
           value={form.expense}
           onChange={handleChange}
-          className="w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="sm:w-40 px-3 py-2 border rounded-lg"
         />
         <button
           onClick={handleSubmit}
-          className="flex cursor-pointer items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
         >
-          {editId ? "अपडेट करा" : <>
-            <Plus className="w-4 h-4" /> Add
-          </>}
+          {editId ? "अपडेट करा" : (
+            <>
+              <Plus className="w-4 h-4" /> Add
+            </>
+          )}
         </button>
-         <Toaster />
+        <Toaster />
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="table-auto w-full border rounded-lg">
+        <table className="min-w-full border text-sm sm:text-base">
           <thead>
             <tr className="bg-gray-100">
-              <th className="w-10 border">आ न</th>
-              <th className="p-2 border">साहित्य</th>
-              <th className="p-2 border">वस्तू खरेदीदारचे नावे</th>
-              <th className="p-2 border">खर्च</th>
-              <th className="p-2 border">क्रिया</th>
+              <th className="border p-2">आ न</th>
+              <th className="border p-2">साहित्य</th>
+              <th className="border p-2">खरेदीदार</th>
+              <th className="border p-2">खर्च</th>
+              <th className="border p-2">क्रिया</th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.map((item, index) => (
               <tr key={item.id} className="text-center hover:bg-gray-50">
-                <td className="w-10 border">
+                <td className="border p-2">
                   {index + 1 + (page - 1) * itemsPerPage}
                 </td>
-                <td className="p-2 border">{item.material}</td>
-                <td className="p-2 border">{item.buyer}</td>
-                <td className="p-2 border">₹{item.expense}</td>
-                <td className="p-2 border flex justify-center gap-2">
-                            <button
-                              onClick={() => handleEdit(item.id)}
-                              className="p-2 rounded-md border hover:bg-gray-100 cursor-pointer"
-                            >
-                              <Pencil className="w-4 h-4 cursor-pointer" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4 cursor-pointer" />
-                            </button>
+                <td className="border p-2">{item.material}</td>
+                <td className="border p-2">{item.buyer}</td>
+                <td className="border p-2">₹{item.expense}</td>
+                <td className="border p-2 flex justify-center gap-2">
+                  <button
+                    onClick={() => handleEdit(item.id)}
+                    className="p-2 border rounded hover:bg-gray-100"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="bg-orange-50 font-bold">
-              <td colSpan="3" className="p-2 border text-right">एकूण</td>
-              <td className="p-2 border">₹{totalExpense}</td>
-              <td className="p-2 border"></td>
+              <td colSpan="3" className="border p-2 text-right">
+                एकूण
+              </td>
+              <td className="border p-2">₹{totalExpense}</td>
+              <td className="border p-2"></td>
             </tr>
           </tfoot>
         </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-6 gap-2">
-        {Array.from(
-          { length: Math.ceil(filteredData.length / itemsPerPage) },
-          (_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i + 1)}
-              className={`px-3 py-1 rounded-md border ${
-                page === i + 1
-                  ? "bg-green-600 text-white"
-                  : "bg-white hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          )
-        )}
       </div>
     </div>
   );

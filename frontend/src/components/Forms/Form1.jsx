@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import auth from "../../utils/auth";
-import { Pencil, Trash2, Plus, DeleteIcon } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { mandalname } from "../../pages/Pdfs";
+import auth from "../../utils/auth";
 
 import toast, { Toaster } from 'react-hot-toast';
 export const Added = () => toast.success('Added Successfully');
@@ -65,45 +65,67 @@ function Form1() {
       .catch(console.error);
   };
 
-  const handleSubmit = () => {
-    
-  
-    const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
-    if (!form.name || !nameRegex.test(form.name)) {
-      toast.error("कृपया वैध नाव टाका (Name required, letters only)");
-      return;
-    }
+ const handleSubmit = () => {
+  const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
+  const trimmedName = form.name.trim();
 
-    if (form.amount === "" || form.amount === null || form.amount === undefined) {
-      toast.error("कृपया रक्कम टाका (Amount required)");
-      return;
-    }
+  if (!trimmedName || !nameRegex.test(trimmedName)) {
+    toast.error("कृपया वैध नाव टाका (Name required, letters only)");
+    return;
+  }
 
-    const payload = { name: form.name, amount: parseFloat(form.amount) };
+  if (form.amount === "" || form.amount === null || form.amount === undefined) {
+    toast.error("कृपया रक्कम टाका (Amount required)");
+    return;
+  }
 
-    if (editId !== null) {
-      auth.loadToken();
-      axios
-        .put(`${API_URL}/update/${editId}`, payload)
-        .then(() => {fetchData()
-          Update();
+  const amountValue = parseFloat(form.amount);
 
-        })
-        .catch(console.error);
-    } else {
-      auth.loadToken();
-      axios
-        .post(`${API_URL}/add`, payload)
-        .then(() => {fetchData()
-          Added();
-        })
-        .catch(console.error);
-        
-    }
+  // Amount must be greater than 500
+  if (isNaN(amountValue) || amountValue < 500) {
+    toast.error("रक्कम 500 पेक्षा जास्त असावी (Amount must be greater than 500)");
+    return;
+  }
 
-    setForm({ name: "", amount: "" });
-    setEditId(null);
-  };
+  // Duplicate name validation (case-insensitive)
+  const isDuplicate = data.some(
+    (item) =>
+      item.name.trim().toLowerCase() === trimmedName.toLowerCase() &&
+      item.id !== editId
+  );
+
+  if (isDuplicate) {
+    toast.error("हे नाव आधीच अस्तित्वात आहे (Duplicate name not allowed)");
+    return;
+  }
+
+  const payload = { name: trimmedName, amount: amountValue };
+
+  if (editId !== null) {
+    auth.loadToken();
+    axios
+      .put(`${API_URL}/update/${editId}`, payload)
+      .then(() => {
+        fetchData();
+        Update();
+      })
+      .catch(console.error);
+  } else {
+    auth.loadToken();
+    axios
+      .post(`${API_URL}/add`, payload)
+      .then(() => {
+        fetchData();
+        Added();
+      })
+      .catch(console.error);
+  }
+
+  setForm({ name: "", amount: "" });
+  setEditId(null);
+};
+
+
 
   const handleEdit = (id) => {
     const record = data.find((item) => item.id === id);
@@ -259,7 +281,7 @@ function Form1() {
             <button
               key={i}
               onClick={() => setPage(i + 1)}
-              className={`px-3 py-1 rounded-md border ${
+              className={`px-3 py-1 rounded-md border cursor-pointer ${
                 page === i + 1
                   ? "bg-blue-600 text-white"
                   : "bg-white hover:bg-gray-100"

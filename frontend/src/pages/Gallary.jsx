@@ -113,7 +113,7 @@ function Gallery() {
           onClick={closemandal}
         >
           <div
-            className="relative max-w-5xl w-full px-4 "
+            className="relative max-w-4xl w-200 px-1 top-3 "
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}

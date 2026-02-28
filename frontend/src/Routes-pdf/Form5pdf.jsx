@@ -16,83 +16,64 @@ import NotoSansDevanagari from "../fonts/NotoSansDevanagari-Regular.ttf";
 // Register Devanagari font
 Font.register({ family: "NotoSansDevanagari", src: NotoSansDevanagari });
 
+// ------------------ Green Theme ------------------
+const THEME = {
+  pageBackground: "#f0fdf4",    // light green page
+  headerLine: "#16a34a",        // green header line
+  title: "#166534",             // dark green title
+  subtitle: "#15803d",          // subtitle
+  tableHeader: "#22c55e",       // table header
+  rowEven: "#dcfce7",           // even rows
+  rowOdd: "#ffffff",            // odd rows
+  footerBackground: "#bbf7d0",  // footer background
+  footerText: "#166534",        // footer text
+};
 
-
+// ------------------ Styles ------------------
 const styles = StyleSheet.create({
   page: {
-    padding: 24,
+    padding: 30,
     fontFamily: "NotoSansDevanagari",
-    backgroundColor: "#f9fafb",
+    backgroundColor: THEME.pageBackground,
   },
-  headerBand: {
-    backgroundColor: "#FCD34D",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
+  headerContainer: {
+    borderBottom: `4pt solid ${THEME.headerLine}`,
+    paddingBottom: 12,
+    marginBottom: 15,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     textAlign: "center",
-    marginBottom: 6,
     fontWeight: "bold",
-    color: "#064e3b",
+    color: THEME.title,
   },
   subtitle: {
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 12,
-    color: "#064e3b",
+    marginTop: 4,
+    color: THEME.subtitle,
   },
   table: {
     display: "table",
     width: "100%",
-    borderCollapse: "collapse",
-    marginTop: 12,
+    marginTop: 10,
   },
   tableRow: {
     flexDirection: "row",
   },
-  tableCol1: {
-    width: "10%",
-    border: "1pt solid #d1d5db",
-    padding: 6,
+  headerRow: {
+    backgroundColor: THEME.tableHeader,
   },
-  tableColName: {
-    width: "45%",
-    border: "1pt solid #d1d5db",
-    padding: 6,
-  },
-  tableColMaterial: {
-    width: "45%",
-    border: "1pt solid #d1d5db",
-    padding: 6,
-  },
-  tableCellHeader: {
-    fontSize: 12,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#111827",
-  },
-  tableCell: {
-    fontSize: 11,
-    textAlign: "left",
-    color: "#1f2937",
-  },
-  footerRow: {
-    flexDirection: "row",
-    marginTop: 8,
-    backgroundColor: "#fde68a",
-  },
-  footerCol: {
-    width: "50%",
-    padding: 6,
-    fontSize: 12,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#111827",
-  },
+  tableColIndex: { width: "10%", border: "1pt solid #d1d5db", padding: 6, justifyContent: "center", alignItems: "center" },
+  tableColName: { width: "45%", border: "1pt solid #d1d5db", padding: 6 },
+  tableColMaterial: { width: "45%", border: "1pt solid #d1d5db", padding: 6 },
+  tableCellHeader: { fontSize: 12, fontWeight: "bold", textAlign: "center", color: "#ffffff" },
+  tableCell: { fontSize: 11, color: "#1f2937" },
+  footerRow: { flexDirection: "row", backgroundColor: THEME.footerBackground, borderRadius: 6, marginTop: 12 },
+  footerCol: { width: "50%", padding: 8, fontSize: 12, fontWeight: "bold", textAlign: "center", color: THEME.footerText },
 });
 
+// ------------------ Component ------------------
 const Form5Pdf = () => {
   const [data, setData] = useState([]);
   const [apiError, setApiError] = useState(false);
@@ -111,15 +92,17 @@ const Form5Pdf = () => {
   const MyDocument = (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.headerBand}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
           <Text style={styles.title}>{mandalname}</Text>
+          <Text style={styles.subtitle}>प्रसाद साहित्य</Text>
         </View>
-        <Text style={styles.subtitle}>प्रसाद साहित्य</Text>
 
+        {/* Table */}
         <View style={styles.table}>
           {/* Table Header */}
-          <View style={styles.tableRow}>
-            <View style={styles.tableCol1}>
+          <View style={[styles.tableRow, styles.headerRow]}fixed>
+            <View style={styles.tableColIndex}>
               <Text style={styles.tableCellHeader}>आ. क्र.</Text>
             </View>
             <View style={styles.tableColName}>
@@ -137,8 +120,17 @@ const Form5Pdf = () => {
             </View>
           ) : (
             data.map((item, idx) => (
-              <View key={idx} style={styles.tableRow} wrap={false}>
-                <View style={styles.tableCol1}>
+              <View
+                key={idx}
+                style={[
+                  styles.tableRow,
+                  {
+                    backgroundColor: idx % 2 === 0 ? THEME.rowEven : THEME.rowOdd,
+                  },
+                ]}
+                wrap={false}
+              >
+                <View style={styles.tableColIndex}>
                   <Text style={styles.tableCell}>{idx + 1}</Text>
                 </View>
                 <View style={styles.tableColName}>
@@ -152,7 +144,7 @@ const Form5Pdf = () => {
           )}
         </View>
 
-        {/* Optional Footer: total items */}
+        {/* Footer */}
         <View style={styles.footerRow}>
           <View style={styles.footerCol}>
             <Text>एकूण नोंदी</Text>

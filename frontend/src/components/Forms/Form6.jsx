@@ -5,6 +5,7 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import { TbCashBanknote } from "react-icons/tb";
 import toast, { Toaster } from 'react-hot-toast';
 import { Added, Update, Delete } from "./Form1";
+
 function Form6() {
   const [data, setData] = useState([]);
   const [form, setForm] = useState({ name: "", amount: "" });
@@ -13,22 +14,17 @@ function Form6() {
   const [page, setPage] = useState(1);
 
   const itemsPerPage = 5;
-  const API_URL = "http://localhost:8080/api/contributions"; // backend API
+  const API_URL = "http://localhost:8080/api/contributions";
 
-  // Fetch data from backend
   const fetchData = () => {
     auth.loadToken();
-    axios
-      .get(`${API_URL}/all`)
-      .then((res) => setData(res.data))
+    axios.get(`${API_URL}/all`)
+      .then(res => setData(res.data))
       .catch(console.error);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
@@ -39,107 +35,80 @@ function Form6() {
     }
   };
 
-  // Add / Update record
   const handleSubmit = () => {
     const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
-    if (!form.name) {
-      toast.error('कृपया नाव भरा (Name is required)');
-      return;
-    }
-    if (!nameRegex.test(form.name)) {
-      toast.error('नाव फक्त अक्षरे असावे');
-      return;
-    }
-    if (form.amount === "" || form.amount === null || form.amount === undefined) {
-      toast.error('कृपया रक्कम टाका (Amount required)');
-      return;
-    }
+    const trimmedName = form.name.trim();
 
-    const payload = { name: form.name, amount: parseFloat(form.amount) };
+    if (!trimmedName) return toast.error('कृपया नाव भरा');
+    if (!nameRegex.test(trimmedName)) return toast.error('नाव फक्त अक्षरे असावे');
+    if (!form.amount && form.amount !== 0) return toast.error('कृपया रक्कम टाका');
+
+    const isDuplicate = data.some(item =>
+      item.name.trim().toLowerCase() === trimmedName.toLowerCase() &&
+      item.id !== editId
+    );
+    if (isDuplicate) return toast.error("हे नाव आधीच नोंदलेले आहे");
+
+    const payload = { name: trimmedName, amount: parseFloat(form.amount) };
+    auth.loadToken();
 
     if (editId) {
-      auth.loadToken();
-      axios
-        .put(`${API_URL}/update/${editId}`, payload)
-        .then(() =>{ fetchData()
-          Update();
-        })
-        .catch(console.error);
+      axios.put(`${API_URL}/update/${editId}`, payload).then(() => { fetchData(); Update(); });
     } else {
-      auth.loadToken();
-      axios
-        .post(`${API_URL}/add`, payload)
-        .then(() =>{ fetchData()
-          Added();
-        })
-        .catch(console.error);
+      axios.post(`${API_URL}/add`, payload).then(() => { fetchData(); Added(); });
     }
 
     setForm({ name: "", amount: "" });
     setEditId(null);
   };
 
-  // Edit record
   const handleEdit = (id) => {
-    const record = data.find((item) => item.id === id);
-    if (record) {
-      setForm({ name: record.name, amount: record.amount });
-      setEditId(id);
-    }
+    const record = data.find(item => item.id === id);
+    if (record) { setForm({ name: record.name, amount: record.amount }); setEditId(id); }
   };
 
-  // Delete record
   const handleDelete = (id) => {
     auth.loadToken();
-    axios
-      .delete(`${API_URL}/delete/${id}`)
-      .then(() => {setData(data.filter((item) => item.id !== id))
-        Delete();
-      })
-      .catch(console.error);
+    axios.delete(`${API_URL}/delete/${id}`).then(() => {
+      setData(data.filter(item => item.id !== id));
+      Delete();
+    });
   };
 
-  // Filter & Pagination
-  const filteredData = useMemo(
-    () =>
-      data.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-      ),
+  const filteredData = useMemo(() => 
+    data.filter(item => item.name.toLowerCase().includes(search.toLowerCase())),
     [data, search]
   );
 
-  const paginatedData = filteredData.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  // Total calculation
+  const paginatedData = filteredData.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const totalAmount = data.reduce((acc, cur) => acc + cur.amount, 0);
 
   return (
-    <div className="p-6">
-      {/* Header + Search */}
-      <div className="flex items-center mb-2">
-        <TbCashBanknote className="size-9 m-2" />
-        <h2 className="text-2xl font-bold">आरतीतील वर्गणी</h2>
-        <TbCashBanknote className="size-9 m-2" />
+    <div className="p-4 sm:p-6">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+        <div className="flex items-center">
+          <TbCashBanknote className="size-7 mr-2" />
+          <h2 className="text-xl sm:text-2xl font-bold">आरतीतील वर्गणी</h2>
+        </div>
         <input
           type="text"
           placeholder="शोधा..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          onChange={e => setSearch(e.target.value)}
+          className="sm:ml-auto w-full sm:w-48 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      {/* Input Form */}
-      <div className="flex gap-3 mb-6">
+      {/* Form */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           name="name"
           placeholder="नाव"
           value={form.name}
           onChange={handleChange}
-          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 border rounded-lg"
         />
         <input
           name="amount"
@@ -147,46 +116,46 @@ function Form6() {
           placeholder="रक्कम"
           value={form.amount}
           onChange={handleChange}
-          className="w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-40 px-3 py-2 border rounded-lg"
         />
         <button
           onClick={handleSubmit}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer"
+          className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
         >
-          {editId ? "अपडेट करा" : <><Plus className="w-4 h-4 cursor-pointer" /> जोडा</>}
+          {editId ? "अपडेट करा" : <><Plus className="w-4 h-4" /> जोडा</>}
         </button>
         <Toaster />
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="table-auto w-full border rounded-lg">
+        <table className="min-w-full border text-sm sm:text-base">
           <thead>
             <tr className="bg-gray-100">
-              <th className="w-10 border">आ न</th>
-              <th className="p-2 border">नाव</th>
-              <th className="p-2 border">रक्कम</th>
-              <th className="p-2 border">क्रिया</th>
+              <th className="border p-2">आ न</th>
+              <th className="border p-2">नाव</th>
+              <th className="border p-2">रक्कम</th>
+              <th className="border p-2">क्रिया</th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.map((item, index) => (
               <tr key={item.id} className="text-center hover:bg-gray-50">
-                <td className="w-10 border">{index + 1 + (page - 1) * itemsPerPage}</td>
-                <td className="p-2 border">{item.name}</td>
-                <td className="p-2 border">₹{item.amount}</td>
-                <td className="p-2 border flex justify-center gap-2">
+                <td className="border p-2">{index + 1 + (page - 1) * itemsPerPage}</td>
+                <td className="border p-2">{item.name}</td>
+                <td className="border p-2">₹{item.amount}</td>
+                <td className="border p-2 flex justify-center gap-2">
                   <button
                     onClick={() => handleEdit(item.id)}
-                    className="p-2 rounded-md border hover:bg-gray-100 cursor-pointer"
+                    className="p-2 border rounded hover:bg-gray-100"
                   >
-                    <Pencil className="w-4 h-4 cursor-pointer" />
+                    <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
                   >
-                    <Trash2 className="w-4 h-4 cursor-pointer" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
               </tr>
@@ -203,7 +172,7 @@ function Form6() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center mt-6 gap-2">
+      <div className="flex flex-wrap justify-center mt-6 gap-2">
         {Array.from({ length: Math.ceil(filteredData.length / itemsPerPage) }, (_, i) => (
           <button
             key={i}
@@ -216,6 +185,7 @@ function Form6() {
           </button>
         ))}
       </div>
+
     </div>
   );
 }

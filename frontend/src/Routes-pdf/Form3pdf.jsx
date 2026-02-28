@@ -16,94 +16,127 @@ import NotoSansDevanagari from "../fonts/NotoSansDevanagari-Regular.ttf";
 // Register Devanagari font
 Font.register({ family: "NotoSansDevanagari", src: NotoSansDevanagari });
 
+// ------------------ Theme Object ------------------
+// Change colors here to switch theme
+const THEME = {
+  pageBackground: "#fef2f2",      // page background
+  headerLine: "#b91c1c",           // header bottom line
+  title: "#991b1b",                 // title color
+  subtitle: "#7f1d1d",              // subtitle color
+  tableHeader: "#ef4444",           // table header row
+  rowEven: "#fee2e2",               // even row
+  rowOdd: "#ffffff",                // odd row
+  footerBackground: "#fca5a5",      // footer row
+  footerText: "#b91c1c",            // footer text
+};
 
-
+// ------------------ Styles ------------------
 const styles = StyleSheet.create({
   page: {
-    padding: 24,
+    padding: 30,
     fontFamily: "NotoSansDevanagari",
-    backgroundColor: "#f9fafb",
+    backgroundColor: THEME.pageBackground,
   },
-  headerBand: {
-    backgroundColor: "#FCD34D",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
+
+  headerContainer: {
+    borderBottom: `4pt solid ${THEME.headerLine}`,
+    paddingBottom: 12,
+    marginBottom: 15,
   },
+
   title: {
-    fontSize: 22,
+    fontSize: 26,
     textAlign: "center",
-    marginBottom: 6,
     fontWeight: "bold",
-    color: "#064e3b",
+    color: THEME.title,
   },
+
   subtitle: {
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 12,
-    color: "#064e3b",
+    marginTop: 4,
+    color: THEME.subtitle,
   },
+
   table: {
     display: "table",
     width: "100%",
-    borderCollapse: "collapse",
-    marginTop: 12,
+    marginTop: 10,
   },
+
   tableRow: {
     flexDirection: "row",
   },
-  tableCol1: {
+
+  headerRow: {
+    backgroundColor: THEME.tableHeader,
+  },
+
+  tableColIndex: {
     width: "8%",
     border: "1pt solid #d1d5db",
     padding: 6,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  tableCol: {
+
+  tableColMaterial: {
     width: "50%",
     border: "1pt solid #d1d5db",
     padding: 6,
   },
+
   tableColPerson: {
     width: "30%",
     border: "1pt solid #d1d5db",
     padding: 6,
   },
+
   tableColAmount: {
     width: "12%",
     border: "1pt solid #d1d5db",
     padding: 6,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
   },
+
   tableCellHeader: {
     fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#111827",
+    color: "#ffffff",
   },
+
   tableCell: {
     fontSize: 11,
-    textAlign: "left",
     color: "#1f2937",
   },
+
   tableCellAmount: {
     fontSize: 11,
     textAlign: "right",
     color: "#1f2937",
     paddingRight: 4,
   },
+
   footerRow: {
     flexDirection: "row",
-    marginTop: 8,
-    backgroundColor: "#fde68a",
+    backgroundColor: THEME.footerBackground,
+    borderRadius: 6,
+    marginTop: 12,
   },
+
   footerCol: {
     width: "33.33%",
-    padding: 6,
+    padding: 8,
     fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#111827",
+    color: THEME.footerText,
   },
 });
 
+// ------------------ Component ------------------
 const Form3Pdf = () => {
   const [data, setData] = useState([]);
   const [apiError, setApiError] = useState(false);
@@ -124,18 +157,20 @@ const Form3Pdf = () => {
   const MyDocument = (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.headerBand}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
           <Text style={styles.title}>{mandalname}</Text>
+          <Text style={styles.subtitle}>{new Date().getFullYear()} मधील खर्च</Text>
         </View>
-        <Text style={styles.subtitle}>{new Date().getFullYear()} मधील खर्च</Text>
 
+        {/* Table */}
         <View style={styles.table}>
           {/* Table Header */}
-          <View style={styles.tableRow}>
-            <View style={styles.tableCol1}>
+          <View style={[styles.tableRow, styles.headerRow]}fixed>
+            <View style={styles.tableColIndex}>
               <Text style={styles.tableCellHeader}>आ. क्र.</Text>
             </View>
-            <View style={styles.tableCol}>
+            <View style={styles.tableColMaterial}>
               <Text style={styles.tableCellHeader}>साहित्य/वस्तू</Text>
             </View>
             <View style={styles.tableColPerson}>
@@ -146,18 +181,28 @@ const Form3Pdf = () => {
             </View>
           </View>
 
-          {/* Table Rows */}
+          {/* Table Data */}
           {apiError ? (
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>डेटा लोड करण्यात अयशस्वी...</Text>
             </View>
           ) : (
             data.map((item, idx) => (
-              <View key={idx} style={styles.tableRow} wrap={false}>
-                <View style={styles.tableCol1}>
+              <View
+                key={idx}
+                style={[
+                  styles.tableRow,
+                  {
+                    backgroundColor:
+                      idx % 2 === 0 ? THEME.rowEven : THEME.rowOdd,
+                  },
+                ]}
+                wrap={false}
+              >
+                <View style={styles.tableColIndex}>
                   <Text style={styles.tableCell}>{idx + 1}</Text>
                 </View>
-                <View style={styles.tableCol}>
+                <View style={styles.tableColMaterial}>
                   <Text style={styles.tableCell}>{item.material}</Text>
                 </View>
                 <View style={styles.tableColPerson}>
@@ -171,7 +216,7 @@ const Form3Pdf = () => {
           )}
         </View>
 
-        {/* Footer */}
+        {/* Footer / Total */}
         <View style={styles.footerRow}>
           <View style={styles.footerCol}>
             <Text>एकूण</Text>
@@ -186,7 +231,7 @@ const Form3Pdf = () => {
   );
 
   return (
-    <div className="w-full h-screen">
+    <div style={{ width: "100%", height: "100vh" }}>
       <PDFViewer style={{ width: "100%", height: "100%" }}>{MyDocument}</PDFViewer>
     </div>
   );

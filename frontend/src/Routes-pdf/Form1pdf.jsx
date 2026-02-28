@@ -14,131 +14,171 @@ import {
 import NotoSansDevanagari from "../fonts/NotoSansDevanagari-Regular.ttf";
 import { mandalname } from "../pages/Pdfs";
 
+// Register Marathi Font
 Font.register({ family: "NotoSansDevanagari", src: NotoSansDevanagari });
 
+// ------------------- Theme -------------------
+const THEME = {
+  pageBackground: "#f0fdf4",
+  headerLine: "#15803d",
+  title: "#166534",
+  subtitle: "#14532d",
+  tableHeader: "#22c55e",
+  rowEven: "#dcfce7",
+  rowOdd: "#ffffff",
+  footerBackground: "#bbf7d0",
+  footerText: "#166534",
+};
 
-
+// ------------------- Styles -------------------
 const styles = StyleSheet.create({
   page: {
-    padding: 24,
+    padding: 30,
     fontFamily: "NotoSansDevanagari",
-    backgroundColor: "#f9fafb",
+    backgroundColor: THEME.pageBackground,
   },
-  headerBand: {
-    backgroundColor: "#FCD34D",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
+  headerContainer: {
+    borderBottom: `4pt solid ${THEME.headerLine}`,
+    paddingBottom: 12,
+    marginBottom: 15,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     textAlign: "center",
-    marginBottom: 6,
     fontWeight: "bold",
-    color: "#064e3b",
+    color: THEME.title,
   },
   subtitle: {
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 12,
-    color: "#064e3b",
+    marginTop: 4,
+    color: THEME.subtitle,
   },
   table: {
     display: "table",
     width: "100%",
-    borderCollapse: "collapse",
-    marginTop: 12,
- left: "50px",
- textTransform: "capitalize",
- 
+    marginTop: 10,
   },
-  tableRow: { flexDirection: "row" },
-  tableColHeader: {
-    width: "50%",
-    backgroundColor: "#f3f4f6",
+  tableRow: {
+    flexDirection: "row",
+  },
+  headerRow: {
+    backgroundColor: THEME.tableHeader,
+  },
+  tableColIndex: {
+    width: "10%",
     border: "1pt solid #d1d5db",
     padding: 6,
-    
-  
+    justifyContent: "center",
+    alignItems: "center",
   },
-  tableCol: { width: "50%", border: "1pt solid #d1d5db", padding: 6 },
-  tableColAmount: { width: "22%", border: "1pt solid #d1d5db", padding: 6 },
-  tableCol1: { width: "8%", border: "1pt solid #d1d5db", padding: 6 },
+  tableColName: {
+    width: "55%",
+    border: "1pt solid #d1d5db",
+    padding: 6,
+  },
+  tableColAmount: {
+    width: "35%",
+    border: "1pt solid #d1d5db",
+    padding: 6,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
   tableCellHeader: {
     fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#111827",
-    
+    color: "#ffffff",
   },
-  tableCell: { fontSize: 11,color: "#1f2937",  textAlign:"center", },
+  tableCell: {
+    fontSize: 11,
+    color: "#1f2937",
+  },
   tableCellAmount: {
     fontSize: 11,
     textAlign: "right",
     color: "#1f2937",
-    paddingRight: 4   ,
+    paddingRight: 4,
   },
-  footerRow: { flexDirection: "row", marginTop: 8, backgroundColor: "#fde68a" },
+  footerRow: {
+    flexDirection: "row",
+    backgroundColor: THEME.footerBackground,
+    borderRadius: 6,
+    marginTop: 12,
+  },
   footerCol: {
-    width: "33.33%",
-    padding: 6,
+    width: "50%",
+    padding: 8,
     fontSize: 12,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#111827",
+    color: THEME.footerText,
   },
 });
 
+// ------------------- Component -------------------
 const Form1Pdf = () => {
   const [data, setData] = useState([]);
   const [previousYearAmount, setPreviousYearAmount] = useState(0);
   const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
-    
-    const token = auth.loadToken(); // reads same key used by Login ("jwt")
-    if (!token) return setApiError(true);
+    auth.loadToken();
 
-    // Fetch all data
-    axios
-      .get("http://localhost:8080/api/all")
-      .then((res) => {
-        setData(res.data);
+    const fetchData = async () => {
+      try {
+        const currentRes = await axios.get(
+          "http://localhost:8080/api/all"
+        );
+        const previousRes = await axios.get(
+          "http://localhost:8080/api/previous-year"
+        );
+
+        setData(currentRes.data);
+
+        // If previous-year API returns object like { amount: 5000 }
+        if (previousRes.data.amount !== undefined) {
+          setPreviousYearAmount(previousRes.data.amount);
+        }
+        // If it returns array like [{ amount: 5000 }]
+        else if (Array.isArray(previousRes.data)) {
+          setPreviousYearAmount(previousRes.data[0]?.amount || 0);
+        }
+
         setApiError(false);
-      })
-      .catch(() => setApiError(true));
+      } catch (error) {
+        console.error("API Error:", error);
+        setApiError(true);
+      }
+    };
 
-    // Fetch previous year amount
-    axios
-      .get("http://localhost:8080/api/previous-year")
-      .then((res) => setPreviousYearAmount(res.data.amount || 0))
-      .catch(() => setPreviousYearAmount(0));
+    fetchData();
   }, []);
 
-  const totalAmount =
-    data.reduce((sum, item) => sum + (item.amount || 0), 0) +
-    previousYearAmount;
+  const totalAmount = data.reduce(
+    (sum, item) => sum + (Number(item.amount) || 0),
+    0
+  );
+
+  const grandTotal = totalAmount + previousYearAmount;
 
   const MyDocument = (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.headerBand}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
           <Text style={styles.title}>{mandalname}</Text>
+          <Text style={styles.subtitle}>वर्गणी अहवाल</Text>
         </View>
-        <Text style={styles.subtitle}>वर्गणी</Text>
 
-        {previousYearAmount > 0 && (
-          <Text style={{ marginBottom: 12, textAlign: "right", fontSize: 12 }}>
-            मागील वर्ष शिल्लक रक्कम: ₹{previousYearAmount}
-          </Text>
-        )}
-
+        {/* Table */}
         <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={styles.tableCol1}>
+          {/* Table Header */}
+          <View style={[styles.tableRow, styles.headerRow]} fixed>
+            <View style={styles.tableColIndex}>
               <Text style={styles.tableCellHeader}>आ. क्र.</Text>
             </View>
-            <View style={styles.tableColHeader}>
+            <View style={styles.tableColName}>
               <Text style={styles.tableCellHeader}>नाव</Text>
             </View>
             <View style={styles.tableColAmount}>
@@ -146,44 +186,69 @@ const Form1Pdf = () => {
             </View>
           </View>
 
+          {/* Table Rows */}
           {apiError ? (
             <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>डेटा लोड करण्यात अयशस्वी...</Text>
+              <Text style={styles.tableCell}>
+                डेटा लोड करण्यात अयशस्वी...
+              </Text>
             </View>
           ) : (
             data.map((item, idx) => (
-              <View key={idx} style={styles.tableRow} wrap={false}>
-                <View style={styles.tableCol1}>
+              <View
+                key={idx}
+                style={[
+                  styles.tableRow,
+                  {
+                    backgroundColor:
+                      idx % 2 === 0 ? THEME.rowEven : THEME.rowOdd,
+                  },
+                ]}
+                wrap={false}
+              >
+                <View style={styles.tableColIndex}>
                   <Text style={styles.tableCell}>{idx + 1}</Text>
                 </View>
-                <View style={styles.tableCol}>
+                <View style={styles.tableColName}>
                   <Text style={styles.tableCell}>{item.name}</Text>
                 </View>
                 <View style={styles.tableColAmount}>
-                  <Text style={styles.tableCellAmount}>{item.amount}</Text>
+                  <Text style={styles.tableCellAmount}>
+                    ₹{item.amount}
+                  </Text>
                 </View>
               </View>
             ))
           )}
         </View>
 
+        {/* Footer */}
         <View style={styles.footerRow}>
           <View style={styles.footerCol}>
-            <Text>एकूण</Text>
+            <Text>मागील वर्ष शिल्लक</Text>
           </View>
-          <View style={styles.footerCol}></View>
           <View style={styles.footerCol}>
-            <Text>₹{totalAmount}</Text>
+            <Text>₹{previousYearAmount}</Text>
           </View>
-         
+        </View>
+
+        <View style={styles.footerRow}>
+          <View style={styles.footerCol}>
+            <Text>एकूण रक्कम</Text>
+          </View>
+          <View style={styles.footerCol}>
+            <Text>₹{grandTotal}</Text>
+          </View>
         </View>
       </Page>
     </Document>
   );
 
   return (
-    <div className="w-full h-screen">
-      <PDFViewer style={{ width: "100%", height: "100%" }}>{MyDocument}</PDFViewer>
+    <div style={{ width: "100%", height: "100vh" }}>
+      <PDFViewer style={{ width: "100%", height: "100%" }}>
+        {MyDocument}
+      </PDFViewer>
     </div>
   );
 };
