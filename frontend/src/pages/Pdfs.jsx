@@ -3,6 +3,7 @@ import { IoMdLogOut } from "react-icons/io";
 import { useNavigate, NavLink } from "react-router-dom";
 import auth from "../utils/auth";
 
+
 export const mandalname = "हिंदवी स्वराज्य मित्र मंडळ";
 
 const pdfs = [
@@ -42,6 +43,7 @@ const Pdfs = () => {
 
       {/* PDF Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+     
         {pdfs.map((pdf, idx) => (
           <div
             key={idx}
@@ -56,6 +58,7 @@ const Pdfs = () => {
             </NavLink>
           </div>
         ))}
+       
       </div>
 
     </div>

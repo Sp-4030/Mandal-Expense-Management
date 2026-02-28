@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import auth from "../utils/auth";
+import Logo from "../components/Logo";
 
 export default function Create() {
   const [loading, setLoading] = useState(false);
@@ -48,7 +49,9 @@ export default function Create() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 space-y-5">
+        <Logo  />
       <Toaster position="top-right" />
+      
       <h1 className="text-2xl font-bold text-gray-800 text-center">
         Admin Panel (प्रशासन पॅनेल)
       </h1>
@@ -61,6 +64,7 @@ export default function Create() {
       >
         {loading ? "Processing... 🧹" : "Create New Data / नवीन डेटा तयार करा (Truncate Tables)"}
       </button>
+    
     </div>
   );
 }

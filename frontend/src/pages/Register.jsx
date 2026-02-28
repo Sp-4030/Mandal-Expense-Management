@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import auth from "../utils/auth";
 import toast, { Toaster } from "react-hot-toast";
-
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState("");
@@ -185,12 +184,13 @@ export default function UserManagement() {
             <tbody>
               {users.map((user, index) => (
                 <tr
-                  key={user.id}
-                  className={`text-center transition duration-300 ${
-                    index % 2 === 0 ? "bg-white" : "bg-orange-50"
-                  } bg-white`}
+                key={user.id}
+                className={`text-center transition duration-300 ${
+                  index % 2 === 0 ? "bg-white" : "bg-orange-50"
+                } bg-white`}
                 >
                   <td className="p-3 font-medium border border-gray-300">
+                 
                     {user.username}
                   </td>
                   <td className="p-3 border border-gray-300">
