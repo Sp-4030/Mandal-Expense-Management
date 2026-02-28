@@ -57,7 +57,7 @@ function Gallery() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 px-6 py-1">
       
       {/* Heading */}
       <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-4 tracking-wide">

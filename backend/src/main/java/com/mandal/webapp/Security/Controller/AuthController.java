@@ -34,15 +34,10 @@ public class AuthController {
 
     @GetMapping("register/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userRepository.findAll()
-                .stream()
-                .skip(1)
-                .collect(Collectors.toList());
+        List<User> users = userRepository.findAll();
+
         return ResponseEntity.ok(users);
     }
-
-
-
 
 
     @PostMapping("/register")

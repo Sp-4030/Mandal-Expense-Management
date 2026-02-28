@@ -23,7 +23,7 @@ function Add() {
   return (
     <div className="max-w-5xl mx-auto ">
       {/* 🔹 Form Switcher */}
-      <div className="flex mt-4   justify-center gap-6 mb-6 flex-wrap">
+      <div className="flex mt-4 justify-center gap-2 mb-6 flex-wrap">
         {formTabs.map((formName, i) => (
           <div
             key={i}

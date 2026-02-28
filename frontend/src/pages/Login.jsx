@@ -4,7 +4,6 @@ import auth from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import { mandalname } from "./Pdfs";
 import toast, { Toaster } from "react-hot-toast";
-
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -99,6 +98,7 @@ export default function Login() {
           >
             <div className="text-center mb-8">
               <div className="inline-block p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-3">
+          
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
