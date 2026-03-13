@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 // Pages & Components
@@ -23,7 +23,7 @@ import Welcome from "./pages/Welcome";
 import auth from "./utils/auth";
 
 
-// ✅ Protected Route (Still Needed)
+// ✅ Protected Route
 const ProtectedRoute = ({ children }) => {
   const token = auth.loadToken();
 
@@ -50,9 +50,10 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
 
-  // ✅ REAL AUTO LOGOUT TIMER
- useEffect(() => {
-  const interval = setInterval(() => {
+  const navigate = useNavigate();
+
+  // ✅ Auto Logout When Token Expires
+  useEffect(() => {
     const token = auth.loadToken();
     if (!token) return;
 
@@ -62,22 +63,21 @@ const App = () => {
 
       if (decoded.exp < currentTime) {
         auth.clearToken();
-        window.location.href = "/login";
+        navigate("/login");
       }
     } catch (error) {
       auth.clearToken();
-      window.location.href = "/login";
+      navigate("/login");
     }
-  }, 3000); // check every 3 seconds
-
-  return () => clearInterval(interval);
-}, []);
+  }, [navigate]);
 
   return (
     <Routes>
 
+      {/* Public Route */}
       <Route path="/login" element={<Login />} />
 
+      {/* Protected Routes */}
       <Route
         path="/"
         element={
@@ -86,23 +86,24 @@ const App = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/register" element={<Register />} />
-        <Route path="/create" element={<Create />} />
-        <Route path="/pdfs" element={<Pdfs />} />
-        <Route path="/add" element={<Add />} />
-        <Route path="/gallary" element={<Gallary />} />
-        <Route path="/dashboard" element={<Welcome />} />
+        <Route path="dashboard" element={<Welcome />} />
+        <Route path="register" element={<Register />} />
+        <Route path="create" element={<Create />} />
+        <Route path="pdfs" element={<Pdfs />} />
+        <Route path="add" element={<Add />} />
+        <Route path="gallary" element={<Gallary />} />
 
-        <Route path="/form1pdf" element={<Form1Pdf />} />
-        <Route path="/form2pdf" element={<Form2Pdf />} />
-        <Route path="/form3pdf" element={<Form3Pdf />} />
-        <Route path="/form4pdf" element={<Form4Pdf />} />
-        <Route path="/form5pdf" element={<Form5Pdf />} />
-        <Route path="/form6pdf" element={<Form6Pdf />} />
+        <Route path="form1pdf" element={<Form1Pdf />} />
+        <Route path="form2pdf" element={<Form2Pdf />} />
+        <Route path="form3pdf" element={<Form3Pdf />} />
+        <Route path="form4pdf" element={<Form4Pdf />} />
+        <Route path="form5pdf" element={<Form5Pdf />} />
+        <Route path="form6pdf" element={<Form6Pdf />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>
 
+      {/* Redirect Unknown Routes */}
       <Route path="*" element={<Navigate to="/login" replace />} />
 
     </Routes>

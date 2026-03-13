@@ -76,7 +76,7 @@ export default function Login() {
         <div className="hidden lg:block lg:w-1/2 relative h-full animate-slideInLeft overflow-hidden">
           <img
             src="https://wallpapers.com/images/hd/shivaji-maharaj-statue-with-garlands-hd-s2g4axsjame3uk9k.jpg"
-            alt="Shivaji"
+            alt="Shivaji Maharaj"
             className="w-full h-full object-cover opacity-95 hover:opacity-100 transition-opacity duration-500"
           />
         </div>
