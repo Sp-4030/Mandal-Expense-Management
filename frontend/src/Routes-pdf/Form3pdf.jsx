@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
-import NotoSansDevanagari from "../fonts/NotoSansDevanagari-Regular.ttf";
+import NotoSansDevanagari from "../Fonts/NotoSansDevanagari-Regular.ttf";
 
 // Register Devanagari font
 Font.register({ family: "NotoSansDevanagari", src: NotoSansDevanagari });

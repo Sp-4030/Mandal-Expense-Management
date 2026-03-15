@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
-import NotoSansDevanagari from "../fonts/NotoSansDevanagari-Regular.ttf";
+import NotoSansDevanagari from "../Fonts/NotoSansDevanagari-Regular.ttf";
 import { mandalname } from "../pages/Pdfs";
 
 // Register Marathi Font

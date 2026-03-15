@@ -16,7 +16,7 @@ import NotFound from "./components/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Create from "./pages/Create";
-import Gallary from "./pages/gallary";
+import Gallary from "./pages/Gallary";
 import Welcome from "./pages/Welcome";
 
 // Auth Utility
