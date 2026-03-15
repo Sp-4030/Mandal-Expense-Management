@@ -195,7 +195,7 @@ function Chatbot() {
                   <p className="bg-red-500 font-semibold text-white px-2 py-1 rounded">
                     You: {chat.user}
                   </p>
-                  <pre className="whitespace-pre-wrap text-gray-800">
+                  <pre className="pt-2 whitespace-pre-wrap text-gray-800">
                     हिंदवी Ai:  {chat.bot}
                   </pre>
                 </div>
