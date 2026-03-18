@@ -31,9 +31,7 @@ function Form2() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "material" || name === "buyer") {
-      const sanitized = value
-        .replace(/[^A-Za-z\u0900-\u097F\s]/g, "")
-        .trimStart();
+      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "");
       setForm({ ...form, [name]: sanitized });
     } else {
       setForm({ ...form, [name]: value });
@@ -41,7 +39,7 @@ function Form2() {
   };
 
   const handleSubmit = () => {
-    const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
+    const nameRegex = /^[A-Za-z\u0900-\u097F\s(),-]+$/;
     const trimmedMaterial = form.material.trim();
     const trimmedBuyer = form.buyer.trim();
 
@@ -57,10 +55,9 @@ function Form2() {
 
     const isDuplicate = data.some(
       (item) =>
-        item.material.trim().toLowerCase() ===
-          trimmedMaterial.toLowerCase() &&
+        item.material.trim().toLowerCase() === trimmedMaterial.toLowerCase() &&
         item.buyer.trim().toLowerCase() === trimmedBuyer.toLowerCase() &&
-        item.id !== editId
+        item.id !== editId,
     );
 
     if (isDuplicate) {
@@ -113,14 +110,14 @@ function Form2() {
       data.filter(
         (item) =>
           item.material.toLowerCase().includes(search.toLowerCase()) ||
-          item.buyer.toLowerCase().includes(search.toLowerCase())
+          item.buyer.toLowerCase().includes(search.toLowerCase()),
       ),
-    [data, search]
+    [data, search],
   );
 
   const paginatedData = filteredData.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
 
   const totalExpense = data.reduce((acc, cur) => acc + cur.expense, 0);
@@ -131,9 +128,7 @@ function Form2() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
         <div className="flex items-center">
           <FaCartArrowDown className="size-7 mr-2 text-green-600" />
-          <h2 className="text-xl sm:text-2xl font-bold">
-            महाप्रसाद बाजार
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-bold">महाप्रसाद बाजार</h2>
         </div>
 
         <input
@@ -173,7 +168,9 @@ function Form2() {
           onClick={handleSubmit}
           className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
         >
-          {editId ? "अपडेट करा" : (
+          {editId ? (
+            "अपडेट करा"
+          ) : (
             <>
               <Plus className="w-4 h-4" /> Add
             </>

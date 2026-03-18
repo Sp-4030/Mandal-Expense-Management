@@ -48,7 +48,7 @@ function Form1() {
     const { name, value } = e.target;
     // If the field is a name, strip digits and punctuation; allow Devanagari and letters and spaces
     if (name === "name") {
-      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s]/g, "");
+     const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "");
       setForm({ ...form, [name]: sanitized });
     } else {
       setForm({ ...form, [name]: value });
@@ -66,7 +66,7 @@ function Form1() {
   };
 
  const handleSubmit = () => {
-  const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
+  const nameRegex = /^[A-Za-z\u0900-\u097F\s(),.-]+$/;
   const trimmedName = form.name.trim();
 
   if (!trimmedName || !nameRegex.test(trimmedName)) {

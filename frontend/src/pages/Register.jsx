@@ -127,7 +127,7 @@ export default function UserManagement() {
       <div className=" w-full max-w-4xl backdrop-blur-lg bg-white/80 border border-white/40 p-8 rounded-2xl shadow-2xl transition-all duration-500">
 
         <h2 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-          User Management (कार्यकर्ते व्यवस्थापन)
+          Admins Management (कार्यकर्ते व्यवस्थापन)
         </h2>
 
         {/* CREATE SECTION */}

@@ -31,7 +31,7 @@ function Form4() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
-      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s]/g, "");
+     const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "");
       setForm({ ...form, [name]: sanitized });
     } else {
       setForm({ ...form, [name]: value });
@@ -39,7 +39,7 @@ function Form4() {
   };
 
   const handleSubmit = () => {
-    const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
+     const nameRegex = /^[A-Za-z\u0900-\u097F\s(),-]+$/;
     const trimmedName = form.name.trim();
 
     if (!trimmedName) {

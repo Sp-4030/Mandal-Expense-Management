@@ -18,7 +18,8 @@ function Form3() {
 
   const fetchData = () => {
     auth.loadToken();
-    axios.get(`${API_URL}/all`)
+    axios
+      .get(`${API_URL}/all`)
       .then((res) => setData(res.data))
       .catch(console.error);
   };
@@ -30,8 +31,7 @@ function Form3() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "material" || name === "person") {
-      const sanitized = value
-        .replace(/[^A-Za-z\u0900-\u097F\s]/g, "")
+      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "")
         .trimStart();
       setForm({ ...form, [name]: sanitized });
     } else {
@@ -40,7 +40,7 @@ function Form3() {
   };
 
   const handleSubmit = () => {
-    const nameRegex = /^[A-Za-z\u0900-\u097F\s]+$/;
+    const nameRegex = /^[A-Za-z\u0900-\u097F\s(),-]+$/;
     const trimmedMaterial = form.material.trim();
     const trimmedPerson = form.person.trim();
 
@@ -58,7 +58,7 @@ function Form3() {
       (item) =>
         item.material.trim().toLowerCase() === trimmedMaterial.toLowerCase() &&
         item.person.trim().toLowerCase() === trimmedPerson.toLowerCase() &&
-        item.id !== editId
+        item.id !== editId,
     );
 
     if (isDuplicate) {
@@ -111,21 +111,20 @@ function Form3() {
       data.filter(
         (item) =>
           item.material.toLowerCase().includes(search.toLowerCase()) ||
-          item.person.toLowerCase().includes(search.toLowerCase())
+          item.person.toLowerCase().includes(search.toLowerCase()),
       ),
-    [data, search]
+    [data, search],
   );
 
   const paginatedData = filteredData.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
 
   const totalExpense = data.reduce((acc, cur) => acc + cur.expense, 0);
 
   return (
     <div className="p-4 sm:p-6">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
         <div className="flex items-center">
@@ -172,7 +171,9 @@ function Form3() {
           onClick={handleSubmit}
           className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          {editId ? "अपडेट करा" : (
+          {editId ? (
+            "अपडेट करा"
+          ) : (
             <>
               <Plus className="w-4 h-4" /> Add
             </>
@@ -247,7 +248,7 @@ function Form3() {
             >
               {i + 1}
             </button>
-          )
+          ),
         )}
       </div>
     </div>
