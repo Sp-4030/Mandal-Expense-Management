@@ -28,6 +28,11 @@ function Form2() {
     fetchData();
   }, []);
 
+  // ✅ Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "material" || name === "buyer") {
@@ -57,7 +62,7 @@ function Form2() {
       (item) =>
         item.material.trim().toLowerCase() === trimmedMaterial.toLowerCase() &&
         item.buyer.trim().toLowerCase() === trimmedBuyer.toLowerCase() &&
-        item.id !== editId,
+        item.id !== editId
     );
 
     if (isDuplicate) {
@@ -105,19 +110,23 @@ function Form2() {
     });
   };
 
+  // ✅ Filter
   const filteredData = useMemo(
     () =>
       data.filter(
         (item) =>
           item.material.toLowerCase().includes(search.toLowerCase()) ||
-          item.buyer.toLowerCase().includes(search.toLowerCase()),
+          item.buyer.toLowerCase().includes(search.toLowerCase())
       ),
-    [data, search],
+    [data, search]
   );
+
+  // ✅ Pagination
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const paginatedData = filteredData.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage,
+    page * itemsPerPage
   );
 
   const totalExpense = data.reduce((acc, cur) => acc + cur.expense, 0);
@@ -192,31 +201,40 @@ function Form2() {
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((item, index) => (
-              <tr key={item.id} className="text-center hover:bg-gray-50">
-                <td className="border p-2">
-                  {index + 1 + (page - 1) * itemsPerPage}
-                </td>
-                <td className="border p-2">{item.material}</td>
-                <td className="border p-2">{item.buyer}</td>
-                <td className="border p-2">₹{item.expense}</td>
-                <td className="border p-2 flex justify-center gap-2">
-                  <button
-                    onClick={() => handleEdit(item.id)}
-                    className="p-2 border rounded hover:bg-gray-100"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+            {paginatedData.length > 0 ? (
+              paginatedData.map((item, index) => (
+                <tr key={item.id} className="text-center hover:bg-gray-50">
+                  <td className="border p-2">
+                    {index + 1 + (page - 1) * itemsPerPage}
+                  </td>
+                  <td className="border p-2">{item.material}</td>
+                  <td className="border p-2">{item.buyer}</td>
+                  <td className="border p-2">₹{item.expense}</td>
+                  <td className="border p-2 flex justify-center gap-2">
+                    <button
+                      onClick={() => handleEdit(item.id)}
+                      className="p-2 border rounded hover:bg-gray-100"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center p-4">
+                  No data found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
+
           <tfoot>
             <tr className="bg-orange-50 font-bold">
               <td colSpan="3" className="border p-2 text-right">
@@ -227,6 +245,31 @@ function Form2() {
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* ✅ Pagination Controls */}
+      <div className="flex justify-center items-center gap-4 mt-4">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="font-medium">
+          Page {page} of {totalPages || 1}
+        </span>
+
+        <button
+          onClick={() =>
+            setPage((prev) => Math.min(prev + 1, totalPages || 1))
+          }
+          disabled={page === totalPages || totalPages === 0}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

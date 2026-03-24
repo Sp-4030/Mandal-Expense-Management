@@ -25,6 +25,11 @@ function Form6() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // ✅ Pagination fix: reset page on search
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") {
@@ -79,6 +84,9 @@ function Form6() {
     data.filter(item => item.name.toLowerCase().includes(search.toLowerCase())),
     [data, search]
   );
+
+  // ✅ total pages
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const paginatedData = filteredData.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const totalAmount = data.reduce((acc, cur) => acc + cur.amount, 0);
@@ -139,27 +147,35 @@ function Form6() {
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((item, index) => (
-              <tr key={item.id} className="text-center hover:bg-gray-50">
-                <td className="border p-2">{index + 1 + (page - 1) * itemsPerPage}</td>
-                <td className="border p-2">{item.name}</td>
-                <td className="border p-2">₹{item.amount}</td>
-                <td className="border p-2 flex justify-center gap-2">
-                  <button
-                    onClick={() => handleEdit(item.id)}
-                    className="p-2 border rounded hover:bg-gray-100"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+            {paginatedData.length > 0 ? (
+              paginatedData.map((item, index) => (
+                <tr key={item.id} className="text-center hover:bg-gray-50">
+                  <td className="border p-2">{index + 1 + (page - 1) * itemsPerPage}</td>
+                  <td className="border p-2">{item.name}</td>
+                  <td className="border p-2">₹{item.amount}</td>
+                  <td className="border p-2 flex justify-center gap-2">
+                    <button
+                      onClick={() => handleEdit(item.id)}
+                      className="p-2 border rounded hover:bg-gray-100"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center p-4">
+                  No data found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
           <tfoot>
             <tr className="bg-orange-50 font-bold">
@@ -172,18 +188,28 @@ function Form6() {
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-wrap justify-center mt-6 gap-2">
-        {Array.from({ length: Math.ceil(filteredData.length / itemsPerPage) }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setPage(i + 1)}
-            className={`px-3 py-1 rounded-md border ${
-              page === i + 1 ? "bg-green-600 text-white" : "bg-white hover:bg-gray-100"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+      <div className="flex justify-center items-center gap-4 mt-4">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="font-medium">
+          Page {page} of {totalPages || 1}
+        </span>
+
+        <button
+          onClick={() =>
+            setPage((prev) => Math.min(prev + 1, totalPages || 1))
+          }
+          disabled={page === totalPages || totalPages === 0}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
 
     </div>

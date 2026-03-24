@@ -26,7 +26,6 @@ function Form1() {
       .get(`${API_URL}/all`)
       .then((res) => setData(res.data))
       .catch(console.error);
-      
   };
 
   const fetchPreviousYearAmount = () => {
@@ -44,11 +43,15 @@ function Form1() {
     fetchPreviousYearAmount();
   }, []);
 
+  // ✅ Pagination fix: reset page on search
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // If the field is a name, strip digits and punctuation; allow Devanagari and letters and spaces
     if (name === "name") {
-     const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "");
+      const sanitized = value.replace(/[^A-Za-z\u0900-\u097F\s(),]/g, "");
       setForm({ ...form, [name]: sanitized });
     } else {
       setForm({ ...form, [name]: value });
@@ -65,67 +68,63 @@ function Form1() {
       .catch(console.error);
   };
 
- const handleSubmit = () => {
-  const nameRegex = /^[A-Za-z\u0900-\u097F\s(),.-]+$/;
-  const trimmedName = form.name.trim();
+  const handleSubmit = () => {
+    const nameRegex = /^[A-Za-z\u0900-\u097F\s(),.-]+$/;
+    const trimmedName = form.name.trim();
 
-  if (!trimmedName || !nameRegex.test(trimmedName)) {
-    toast.error("कृपया वैध नाव टाका (Name required, letters only)");
-    return;
-  }
+    if (!trimmedName || !nameRegex.test(trimmedName)) {
+      toast.error("कृपया वैध नाव टाका (Name required, letters only)");
+      return;
+    }
 
-  if (form.amount === "" || form.amount === null || form.amount === undefined) {
-    toast.error("कृपया रक्कम टाका (Amount required)");
-    return;
-  }
+    if (form.amount === "" || form.amount === null || form.amount === undefined) {
+      toast.error("कृपया रक्कम टाका (Amount required)");
+      return;
+    }
 
-  const amountValue = parseFloat(form.amount);
+    const amountValue = parseFloat(form.amount);
 
-  // Amount must be greater than 500
-  if (isNaN(amountValue) || amountValue < 500) {
-    toast.error("रक्कम 500 पेक्षा जास्त असावी (Amount must be greater than 500)");
-    return;
-  }
+    if (isNaN(amountValue) || amountValue < 500) {
+      toast.error("रक्कम 500 पेक्षा जास्त असावी (Amount must be greater than 500)");
+      return;
+    }
 
-  // Duplicate name validation (case-insensitive)
-  const isDuplicate = data.some(
-    (item) =>
-      item.name.trim().toLowerCase() === trimmedName.toLowerCase() &&
-      item.id !== editId
-  );
+    const isDuplicate = data.some(
+      (item) =>
+        item.name.trim().toLowerCase() === trimmedName.toLowerCase() &&
+        item.id !== editId
+    );
 
-  if (isDuplicate) {
-    toast.error("हे नाव आधीच अस्तित्वात आहे (Duplicate name not allowed)");
-    return;
-  }
+    if (isDuplicate) {
+      toast.error("हे नाव आधीच अस्तित्वात आहे (Duplicate name not allowed)");
+      return;
+    }
 
-  const payload = { name: trimmedName, amount: amountValue };
+    const payload = { name: trimmedName, amount: amountValue };
 
-  if (editId !== null) {
-    auth.loadToken();
-    axios
-      .put(`${API_URL}/update/${editId}`, payload)
-      .then(() => {
-        fetchData();
-        Update();
-      })
-      .catch(console.error);
-  } else {
-    auth.loadToken();
-    axios
-      .post(`${API_URL}/add`, payload)
-      .then(() => {
-        fetchData();
-        Added();
-      })
-      .catch(console.error);
-  }
+    if (editId !== null) {
+      auth.loadToken();
+      axios
+        .put(`${API_URL}/update/${editId}`, payload)
+        .then(() => {
+          fetchData();
+          Update();
+        })
+        .catch(console.error);
+    } else {
+      auth.loadToken();
+      axios
+        .post(`${API_URL}/add`, payload)
+        .then(() => {
+          fetchData();
+          Added();
+        })
+        .catch(console.error);
+    }
 
-  setForm({ name: "", amount: "" });
-  setEditId(null);
-};
-
-
+    setForm({ name: "", amount: "" });
+    setEditId(null);
+  };
 
   const handleEdit = (id) => {
     const record = data.find((item) => item.id === id);
@@ -139,11 +138,19 @@ function Form1() {
     auth.loadToken();
     axios
       .delete(`${API_URL}/delete/${id}`)
-      .then(() => {setData(data.filter((item) => item.id !== id))
+      .then(() => {
+        const updated = data.filter((item) => item.id !== id);
+        setData(updated);
+
+        // ✅ Pagination fix after delete
+        const totalPages = Math.ceil(updated.length / itemsPerPage);
+        if (page > totalPages) {
+          setPage(totalPages || 1);
+        }
+
         Delete();
       })
       .catch(console.error);
-      
   };
 
   const filteredData = useMemo(
@@ -153,6 +160,9 @@ function Form1() {
       ),
     [data, search]
   );
+
+  // ✅ total pages
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const paginatedData = filteredData.slice(
     (page - 1) * itemsPerPage,
@@ -213,9 +223,9 @@ function Form1() {
           onClick={handleSubmit}
           className="flex items-center cursor-pointer justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          {editId !== null ? "Update"  : <><Plus className="w-4 h-4" /> Add</>}
+          {editId !== null ? "Update" : <><Plus className="w-4 h-4" /> Add</>}
         </button>
-        <Toaster/>
+        <Toaster />
       </div>
 
       {/* Table */}
@@ -230,30 +240,39 @@ function Form1() {
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((item, index) => (
-              <tr key={item.id} className="text-center hover:bg-gray-50">
-                <td className="w-10 border px-2 py-1">
-                  {index + 1 + (page - 1) * itemsPerPage}
-                </td>
-                <td className="p-2 border">{item.name}</td>
-                <td className="p-2 border">₹{item.amount}</td>
-                <td className="p-2 border flex justify-center gap-2">
-                            <button
-                              onClick={() => handleEdit(item.id)}
-                              className="p-2 rounded-md border hover:bg-gray-100 cursor-pointer"
-                            >
-                              <Pencil className="w-4 h-4 cursor-pointer" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4 cursor-pointer" />
-                            </button>
+            {paginatedData.length > 0 ? (
+              paginatedData.map((item, index) => (
+                <tr key={item.id} className="text-center hover:bg-gray-50">
+                  <td className="w-10 border px-2 py-1">
+                    {index + 1 + (page - 1) * itemsPerPage}
+                  </td>
+                  <td className="p-2 border">{item.name}</td>
+                  <td className="p-2 border">₹{item.amount}</td>
+                  <td className="p-2 border flex justify-center gap-2">
+                    <button
+                      onClick={() => handleEdit(item.id)}
+                      className="p-2 rounded-md border hover:bg-gray-100 cursor-pointer"
+                    >
+                      <Pencil className="w-4 h-4 cursor-pointer" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4 cursor-pointer" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center p-4">
+                  No data found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
+
           <tfoot>
             <tr className="bg-blue-50 font-semibold">
               <td colSpan="2" className="p-2 border text-right">
@@ -273,25 +292,29 @@ function Form1() {
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex flex-wrap justify-center mt-6 gap-2">
-        {Array.from(
-          { length: Math.ceil(filteredData.length / itemsPerPage) },
-          (_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i + 1)}
-              className={`px-3 py-1 rounded-md border cursor-pointer ${
-                page === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-white hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          )
-        )}
-      </div>
+     <div className="flex justify-center items-center gap-4 mt-4">
+  <button
+    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+    disabled={page === 1}
+    className="px-3 py-1 border rounded disabled:opacity-50"
+  >
+    Prev
+  </button>
+
+  <span className="font-medium">
+    Page {page} of {totalPages || 1}
+  </span>
+
+  <button
+    onClick={() =>
+      setPage((prev) => Math.min(prev + 1, totalPages || 1))
+    }
+    disabled={page === totalPages || totalPages === 0}
+    className="px-3 py-1 border rounded disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
     </div>
   );
 }
