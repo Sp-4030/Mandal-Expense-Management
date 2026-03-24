@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import auth from "../utils/auth";
 import toast, { Toaster } from "react-hot-toast";
+
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState("");
@@ -31,45 +32,56 @@ export default function UserManagement() {
 
   // ✅ Validation Function
   const validateForm = () => {
-  const trimmedUsername = username.trim();
-  const trimmedPassword = password.trim();
-  const trimmedConfirmPassword = confirmPassword.trim();
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
 
-  if (!trimmedUsername || !trimmedPassword || !trimmedConfirmPassword) {
-    toast.error("Fill all fields (सर्व माहिती भरा)");
-    return false;
-  }
+    if (!trimmedUsername || !trimmedPassword || !trimmedConfirmPassword) {
+      toast.error("Fill all fields (सर्व माहिती भरा)");
+      return false;
+    }
 
-  if (trimmedUsername.length < 3) {
-    toast.error("Username must be at least 3 characters");
-    return false;
-  }
+    if (trimmedUsername.length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return false;
+    }
 
-  const usernameRegex = /^[a-zA-Z0-9_]+$/;
-  if (!usernameRegex.test(trimmedUsername)) {
-    toast.error("Username only allows letters, numbers & underscore");
-    return false;
-  }
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(trimmedUsername)) {
+      toast.error("Username only allows letters, numbers & underscore");
+      return false;
+    }
 
-  // ✅ NEW: Prevent only numbers
-  const onlyNumbers = /^[0-9]+$/;
-  if (onlyNumbers.test(trimmedUsername)) {
-    toast.error("Username cannot be only numbers (फक्त अंक चालणार नाहीत)");
-    return false;
-  }
+    // ❌ Prevent only numbers
+    const onlyNumbers = /^[0-9]+$/;
+    if (onlyNumbers.test(trimmedUsername)) {
+      toast.error("Username cannot be only numbers (फक्त अंक चालणार नाहीत)");
+      return false;
+    }
 
-  if (trimmedPassword.length < 4) {
-    toast.error("Password must be at least 4 characters");
-    return false;
-  }
+    // ✅ NEW: Prevent duplicate username
+    const isDuplicate = users.some(
+      (user) =>
+        user.username.toLowerCase() === trimmedUsername.toLowerCase()
+    );
 
-  if (trimmedPassword !== trimmedConfirmPassword) {
-    toast.error("Passwords do not match (पासवर्ड जुळत नाही)");
-    return false;
-  }
+    if (isDuplicate) {
+      toast.error("Username already exists (हे नाव आधीच वापरले आहे)");
+      return false;
+    }
 
-  return true;
-};
+    if (trimmedPassword.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return false;
+    }
+
+    if (trimmedPassword !== trimmedConfirmPassword) {
+      toast.error("Passwords do not match (पासवर्ड जुळत नाही)");
+      return false;
+    }
+
+    return true;
+  };
 
   // ✅ CREATE USER
   const handleCreate = async () => {
@@ -124,15 +136,13 @@ export default function UserManagement() {
     <div className="min-h-screen bg-sky-50 flex items-center justify-center p-6">
       <Toaster position="top-center" />
 
-      <div className=" w-full max-w-4xl backdrop-blur-lg bg-white/80 border border-white/40 p-8 rounded-2xl shadow-2xl transition-all duration-500">
-
+      <div className="w-full max-w-4xl backdrop-blur-lg bg-white/80 border border-white/40 p-8 rounded-2xl shadow-2xl transition-all duration-500">
         <h2 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
           Admins Management (कार्यकर्ते व्यवस्थापन)
         </h2>
 
         {/* CREATE SECTION */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-
           <input
             type="text"
             placeholder="Username (कार्यकर्ता नाव)"
@@ -162,7 +172,7 @@ export default function UserManagement() {
 
           <button
             onClick={handleCreate}
-            className="bg-gradient-to-r bg-green-500 text-white font-semibold px-5 py-3 rounded-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer"
+            className="bg-green-500 text-white font-semibold px-5 py-3 rounded-lg shadow-md hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer"
           >
             Create (तयार करा)
           </button>
@@ -172,7 +182,7 @@ export default function UserManagement() {
         <div className="overflow-hidden rounded-xl shadow-lg">
           <table className="w-full text-sm text-gray-700 border border-gray-300 border-collapse">
             <thead>
-              <tr className="bg-gradient-to-r bg-orange-500  text-white">
+              <tr className="bg-orange-500 text-white">
                 <th className="p-3 border border-gray-300">
                   Username (कार्यकर्ता नाव)
                 </th>
@@ -181,22 +191,23 @@ export default function UserManagement() {
                 </th>
               </tr>
             </thead>
+
             <tbody>
               {users.map((user, index) => (
                 <tr
-                key={user.id}
-                className={`text-center transition duration-300 ${
-                  index % 2 === 0 ? "bg-white" : "bg-orange-50"
-                } bg-white`}
+                  key={user.id}
+                  className={`text-center transition duration-300 ${
+                    index % 2 === 0 ? "bg-white" : "bg-orange-50"
+                  }`}
                 >
                   <td className="p-3 font-medium border border-gray-300">
-                 
                     {user.username}
                   </td>
+
                   <td className="p-3 border border-gray-300">
                     <button
                       onClick={() => handleDelete(user.id)}
-                      className="bg-gradient-to-r bg-red-500  text-white px-4 py-1.5 rounded-md shadow hover:scale-110 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                      className="bg-red-500 text-white px-4 py-1.5 rounded-md shadow hover:scale-110 hover:shadow-lg transition-all duration-300 cursor-pointer"
                     >
                       Delete (काढून टाका)
                     </button>
@@ -206,7 +217,6 @@ export default function UserManagement() {
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   );
